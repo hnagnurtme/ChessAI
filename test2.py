@@ -4,13 +4,13 @@ import time
 import csv
 import math
 from datetime import datetime
-from bot2 import NNBt
+from bot_VIP import NNBt
 
 # =========================
 # CONFIG
 # =========================
 MODEL_PATH = "chess_model.pth"
-STOCKFISH_PATH = "stockfish/stockfish-windows-x86-64-avx2.exe"
+STOCKFISH_PATH = "stockfish/stockfish-macos-m1-apple-silicon"
 
 SF_ELO = 1500
 NUM_GAMES = 10
