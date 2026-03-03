@@ -156,7 +156,8 @@ def play_game(
             is_bot_turn = (board.turn == chess.WHITE) == bot_is_white
 
             if is_bot_turn:
-                move = bot.get_best_move(board, depth=CONFIG["bot_depth"])
+                #move = bot.get_best_move(board, depth=CONFIG["bot_depth"])
+                move = bot.get_best_move(board)
                 if move is None or move not in board.legal_moves:
                     # Bot không tìm được nước đi hợp lệ
                     duration = time.time() - start_time

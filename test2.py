@@ -12,7 +12,7 @@ from bot_VIP import NNBt
 MODEL_PATH = "chess_model.pth"
 STOCKFISH_PATH = "stockfish/stockfish-macos-m1-apple-silicon"
 
-SF_ELO = 1500
+SF_ELO = 2000
 NUM_GAMES = 10
 BOT_DEPTH = 3
 SF_TIME = 0.1
@@ -32,7 +32,7 @@ def play_one_game(bot, engine, bot_is_white):
         is_bot_turn = (board.turn == chess.WHITE) == bot_is_white
 
         if is_bot_turn:
-            move = bot.get_best_move(board, depth=BOT_DEPTH)
+            move = bot.get_best_move(board)
         else:
             result = engine.play(
                 board,
