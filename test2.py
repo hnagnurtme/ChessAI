@@ -14,7 +14,7 @@ STOCKFISH_PATH = "stockfish/stockfish-macos-m1-apple-silicon"
 
 SF_ELO = 2000
 NUM_GAMES = 10
-BOT_DEPTH = 3
+BOT_DEPTH = 4
 SF_TIME = 0.1
 
 SUMMARY_FILE = "summary_results.csv"
@@ -24,30 +24,28 @@ SUMMARY_FILE = "summary_results.csv"
 # Play one game
 # =========================
 def play_one_game(bot, engine, bot_is_white):
-
     board = chess.Board()
-
+    
     while not board.is_game_over():
-
         is_bot_turn = (board.turn == chess.WHITE) == bot_is_white
 
         if is_bot_turn:
             move = bot.get_best_move(board)
         else:
-            result = engine.play(
-                board,
-                chess.engine.Limit(time=SF_TIME)
-            )
+            result = engine.play(board, chess.engine.Limit(time=SF_TIME))
             move = result.move
 
-        if move not in board.legal_moves:
-            print("Illegal move detected!")
-            return 0
+        # Kiểm tra nước đi hợp lệ an toàn hơn
+        if move is None or move not in board.legal_moves:
+            print(f"Illegal move ({move}) by {'BOT' if is_bot_turn else 'SF'}!")
+            return 0 if is_bot_turn else 1
 
         board.push(move)
 
+    # In kết quả ván đấu ra console để theo dõi
+    print(f"  Game ended. Fen: {board.fen()[:30]}... Result: {board.result()}")
+    
     result = board.result()
-
     if result == "1-0":
         return 1 if bot_is_white else 0
     elif result == "0-1":
