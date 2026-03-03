@@ -1177,3 +1177,6 @@ class NNBt:
 #     print(f"  Best move: {move4}\n")
 
 #     print("=== All tests complete ===")
+# Alias để routes.py có thể import BotVIP
+BotVIP = NNBt
+
