@@ -7,6 +7,7 @@ import chess
 from fastapi import APIRouter, HTTPException
 
 from models.schemas import (
+    ApiResponse,
     MoveRequest,
     MoveResponse,
     EngineInfo,
@@ -56,13 +57,17 @@ def _make_engine(name: str):
 # ─────────────────────────────────────────────────────────
 @router.get(
     "/engines",
-    response_model=EnginesResponse,
+    response_model=ApiResponse[EnginesResponse],
     summary="Liệt kê các engine",
     tags=["Engine"],
 )
-def list_engines() -> EnginesResponse:
+def list_engines() -> ApiResponse[EnginesResponse]:
     """Trả về danh sách engine và mô tả ngắn."""
-    return EnginesResponse(engines=list(_ENGINE_META.values()))
+    return ApiResponse(
+        success=True,
+        message="Lấy danh sách engine thành công.",
+        data=EnginesResponse(engines=list(_ENGINE_META.values())),
+    )
 
 
 # ─────────────────────────────────────────────────────────
@@ -70,11 +75,11 @@ def list_engines() -> EnginesResponse:
 # ─────────────────────────────────────────────────────────
 @router.post(
     "/move",
-    response_model=MoveResponse,
+    response_model=ApiResponse[MoveResponse],
     summary="Lấy nước đi tốt nhất",
     tags=["Chess"],
 )
-def get_move(req: MoveRequest) -> MoveResponse:
+def get_move(req: MoveRequest) -> ApiResponse[MoveResponse]:
     """
     Nhận FEN và tên engine → trả về nước đi tốt nhất (UCI format).
 
@@ -111,9 +116,13 @@ def get_move(req: MoveRequest) -> MoveResponse:
     if move is None:
         raise HTTPException(status_code=500, detail="Engine không tìm được nước đi.")
 
-    return MoveResponse(
-        move=move.uci(),
-        engine_used=req.engine,
-        nodes=getattr(engine, "nodes", None),
-        elapsed_ms=elapsed_ms,
+    return ApiResponse(
+        success=True,
+        message=f"Engine {req.engine} tính toán thành công.",
+        data=MoveResponse(
+            move=move.uci(),
+            engine_used=req.engine,
+            nodes=getattr(engine, "nodes", None),
+            elapsed_ms=elapsed_ms,
+        ),
     )

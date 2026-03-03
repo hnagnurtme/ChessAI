@@ -1,5 +1,15 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Generic, Optional, TypeVar
+
+T = TypeVar("T")
+
+
+class ApiResponse(BaseModel, Generic[T]):
+    """Wrapper chuẩn cho mọi API response."""
+
+    success: bool = Field(..., description="True nếu request thành công.")
+    message: str = Field(..., description="Thông báo mô tả kết quả.")
+    data: Optional[T] = Field(None, description="Payload trả về (None nếu lỗi).")
 
 
 class MoveRequest(BaseModel):
