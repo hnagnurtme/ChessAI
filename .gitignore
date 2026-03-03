@@ -3,4 +3,8 @@ lichess_db_standard_rated_2015-07.pgn
 \stockfish
 \eval_results
 \env
-__pycache__
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
