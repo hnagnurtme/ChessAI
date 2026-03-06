@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Chessboard } from 'react-chessboard';
 import useChessGame from './useChessGame';
 
@@ -234,7 +234,8 @@ export default function App() {
                             }}
                             customDarkSquareStyle={{ backgroundColor: '#3a3a3a' }}
                             customLightSquareStyle={{ backgroundColor: '#f0d9b5' }}
-                            areArrowsAllowed
+                            arePiecesDraggable={true}
+                            areArrowsAllowed={false}
                             animationDuration={200}
                         />
                     </div>
