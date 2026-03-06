@@ -74,7 +74,7 @@ export default function useChessGame({ onToast }) {
   ────────────────────────────────────────── */
   const handleGameOver = useCallback((g) => {
     const color = playerColorRef.current;
-    if (g.isCheckmate()) {
+    if (g.in_checkmate()) {
       const winner = g.turn() === 'w' ? 'black' : 'white';
       if (winner === color) {
         setGameResult('win');
@@ -101,7 +101,7 @@ export default function useChessGame({ onToast }) {
     setMoveHistory(prev => [...prev, { san, side }]);
     if (botMoveStr != null) setLastBotMove(botMoveStr);
     if (stats != null)      setLastStats(stats);
-    if (updatedGame.isGameOver()) handleGameOver(updatedGame);
+    if (updatedGame.game_over()) handleGameOver(updatedGame);
   }, [handleGameOver]);
 
   /* ──────────────────────────────────────────
@@ -198,7 +198,7 @@ export default function useChessGame({ onToast }) {
     applyMove(updated, move.san, 'me', null, null);
     setLastBotMove(null);
 
-    if (updated.isGameOver()) return true;
+    if (updated.game_over()) return true;
 
     // Truyền FEN snapshot vào bot — không dùng state/ref sau async gap
     const nextFen = updated.fen();
@@ -225,7 +225,7 @@ export default function useChessGame({ onToast }) {
 
     applyMove(updated, move.san, 'me', null, null);
     setLastBotMove(null);
-    if (updated.isGameOver()) return;
+    if (updated.game_over()) return;
 
     const nextFen = updated.fen();
     setTimeout(() => requestBotMove(nextFen), 300);
@@ -318,8 +318,8 @@ export default function useChessGame({ onToast }) {
   /* ──────────────────────────────────────────
      Derived UI state
   ────────────────────────────────────────── */
-  const isCheck  = game.isCheck() && !game.isGameOver();
-  const isOver   = game.isGameOver();
+  const isCheck  = game.in_check() && !game.game_over();
+  const isOver   = game.game_over();
   const isMyTurn = !isOver && !thinking && !gameResult &&
     ((game.turn() === 'w' && playerColor === 'white') ||
      (game.turn() === 'b' && playerColor === 'black'));
@@ -369,5 +369,8 @@ export default function useChessGame({ onToast }) {
     newGame,
     undo,
     canUndo: !botLockRef.current && game.history().length >= 2,
+    // Game state
+    game,
+    gameResult,
   };
 }
