@@ -369,5 +369,8 @@ export default function useChessGame({ onToast }) {
     newGame,
     undo,
     canUndo: !botLockRef.current && game.history().length >= 2,
+    // Game state
+    game,
+    gameResult,
   };
 }
