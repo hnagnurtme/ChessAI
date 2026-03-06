@@ -1,0 +1,55 @@
+version: '3.8'
+
+# Production Docker Compose for GCP deployment
+# This file is used on the GCP server
+
+services:
+  backend:
+    image: ${DOCKERHUB_USERNAME}/${IMAGE_BACKEND:-chess-bot-backend}:latest
+    container_name: chess-backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENVIRONMENT=production
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/docs')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - chess-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    image: ${DOCKERHUB_USERNAME}/${IMAGE_FRONTEND:-chess-bot-frontend}:latest
+    container_name: chess-frontend
+    restart: always
+    ports:
+      - "5175:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - chess-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  chess-network:
+    driver: bridge

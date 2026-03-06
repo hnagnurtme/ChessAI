@@ -147,3 +147,53 @@ npm run lint
 - Backend: Python 3.11-slim based (approximately 150-200MB)
 - Frontend: Multi-stage Nginx Alpine based (approximately 25-35MB)
 
+## 🚀 CI/CD Deployment
+
+This project includes automated CI/CD pipeline for deploying to Google Cloud Platform.
+
+### Quick Setup
+
+1. **Docker Hub**: Create account and access token
+2. **GCP VM**: Setup Ubuntu VM with Docker installed
+3. **GitHub Secrets**: Configure deployment secrets
+4. **Nginx**: Setup reverse proxy on GCP
+5. **Deploy**: Push to GitHub → Auto deploy!
+
+### Documentation
+
+- **[CI/CD Quick Start](./CI-CD-SETUP.md)** - 10-step setup guide
+- **[Complete Deployment Guide](./DEPLOY.md)** - Detailed documentation with monitoring and troubleshooting
+
+### GitHub Actions Workflow
+
+Pipeline automatically:
+1. ✅ Builds Docker images
+2. ✅ Pushes to Docker Hub with version tags
+3. ✅ Deploys to GCP via SSH
+4. ✅ Runs health checks
+
+Triggers on:
+- Push to `main` or `prod` branch
+- Manual workflow dispatch
+
+### Required GitHub Secrets
+
+| Secret | Description |
+|--------|-------------|
+| `DOCKERHUB_USERNAME` | Docker Hub username |
+| `DOCKERHUB_TOKEN` | Docker Hub access token |
+| `GCP_HOST` | GCP VM public IP |
+| `GCP_USERNAME` | SSH username |
+| `GCP_SSH_KEY` | SSH private key |
+
+### Production URLs
+
+After deployment, access your application:
+- Frontend: `http://YOUR_GCP_IP/`
+- API Docs: `http://YOUR_GCP_IP/docs`
+- API Endpoint: `http://YOUR_GCP_IP/api/`
+
+## License
+
+[Add your license here]
+
