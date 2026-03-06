@@ -1,6 +1,13 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Chessboard } from 'react-chessboard';
 import useChessGame from './useChessGame';
+import { 
+    FaTrophy, FaSkull, FaHandshake, 
+    FaClock, FaRedo, FaUndo, FaHistory, 
+    FaChartBar, FaRobot, FaBrain, FaUser,
+    FaChess, FaChessKing, FaChessQueen,
+    FaBolt, FaPalette, FaFire, FaStar, FaCrown
+} from 'react-icons/fa';
 
 const DIFFICULTIES = [
     {
@@ -52,19 +59,19 @@ function GameResultModal({ result, onClose, onNewGame, wins, losses, draws }) {
     const config = {
         win: {
             title: 'Chiến Thắng!',
-            icon: '🏆',
+            icon: <FaTrophy />,
             message: 'Chúc mừng! Bạn đã thắng ván cờ này',
             color: 'var(--green)',
         },
         loss: {
             title: 'Thất Bại',
-            icon: '💀',
+            icon: <FaSkull />,
             message: 'Bot đã thắng ván này. Thử lại nhé!',
             color: 'var(--red)',
         },
         draw: {
             title: 'Hòa Cờ',
-            icon: '🤝',
+            icon: <FaHandshake />,
             message: 'Ván cờ kết thúc với kết quả hòa',
             color: 'var(--yellow)',
         },
@@ -98,10 +105,36 @@ function GameResultModal({ result, onClose, onNewGame, wins, losses, draws }) {
 
                 <div className="modal-actions">
                     <button className="btn btn-yellow" onClick={onNewGame}>
-                        🔄 Ván Mới
+                        <FaRedo /> Ván Mới
                     </button>
                     <button className="btn btn-white" onClick={onClose}>
-                        ✕ Đóng
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ── Confirmation Modal ── */
+function ConfirmationModal({ show, onConfirm, onCancel, title, message }) {
+    if (!show) return null;
+    
+    return (
+        <div className="modal-overlay" onClick={onCancel}>
+            <div className="modal-content confirm-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-icon" style={{ color: 'var(--yellow)' }}>
+                    <FaBolt />
+                </div>
+                <h2 className="modal-title">{title}</h2>
+                <p className="modal-message">{message}</p>
+                
+                <div className="modal-actions">
+                    <button className="btn btn-yellow" onClick={onConfirm}>
+                        <FaRedo /> Xác Nhận
+                    </button>
+                    <button className="btn btn-white" onClick={onCancel}>
+                        Hủy
                     </button>
                 </div>
             </div>
@@ -137,11 +170,11 @@ function ChessTimer({ playerColor, currentTurn, thinking }) {
     return (
         <div className="chess-timers">
             <div className={`timer ${currentTurn !== playerColor && !thinking ? 'active' : ''}`}>
-                <div className="timer-label">🤖 BOT</div>
+                <div className="timer-label"><FaRobot /> BOT</div>
                 <div className="timer-value">{formatTime(botTime)}</div>
             </div>
             <div className={`timer ${currentTurn === playerColor && !thinking ? 'active' : ''}`}>
-                <div className="timer-label">👤 BẠN</div>
+                <div className="timer-label"><FaUser /> BẠN</div>
                 <div className="timer-value">{formatTime(playerTime)}</div>
             </div>
         </div>
@@ -157,6 +190,9 @@ function formatMs( ms ) {
 export default function App() {
     const [ toasts, setToasts ] = useState( [] );
     const [ gameKey, setGameKey ] = useState( 0 );
+    const [ showConfirmModal, setShowConfirmModal ] = useState( false );
+    const [ pendingAction, setPendingAction ] = useState( null );
+    const [ pendingValue, setPendingValue ] = useState( null );
 
     const addToast = useCallback( ( message, type = 'info' ) => {
         const id = Date.now();
@@ -193,17 +229,50 @@ export default function App() {
         setGameKey(prev => prev + 1);
     }, [originalNewGame]);
 
-    // Wrap setDifficulty to trigger timer reset
+    // Show confirmation modal for difficulty change
     const handleSetDifficulty = useCallback((d) => {
-        setDifficulty(d);
-        setGameKey(prev => prev + 1);
-    }, [setDifficulty]);
+        if (moveHistory.length > 0) {
+            setPendingAction('difficulty');
+            setPendingValue(d);
+            setShowConfirmModal(true);
+        } else {
+            setDifficulty(d);
+            setGameKey(prev => prev + 1);
+        }
+    }, [setDifficulty, moveHistory]);
 
-    // Wrap setPlayerColor to trigger timer reset
+    // Show confirmation modal for color change
     const handleSetPlayerColor = useCallback((color) => {
-        setPlayerColor(color);
+        if (moveHistory.length > 0) {
+            setPendingAction('color');
+            setPendingValue(color);
+            setShowConfirmModal(true);
+        } else {
+            setPlayerColor(color);
+            setGameKey(prev => prev + 1);
+        }
+    }, [setPlayerColor, moveHistory]);
+
+    // Handle confirmation
+    const handleConfirm = useCallback(() => {
+        if (pendingAction === 'difficulty') {
+            setDifficulty(pendingValue);
+        } else if (pendingAction === 'color') {
+            setPlayerColor(pendingValue);
+        }
+        originalNewGame();
         setGameKey(prev => prev + 1);
-    }, [setPlayerColor]);
+        setShowConfirmModal(false);
+        setPendingAction(null);
+        setPendingValue(null);
+    }, [pendingAction, pendingValue, setDifficulty, setPlayerColor, originalNewGame]);
+
+    // Handle cancel
+    const handleCancel = useCallback(() => {
+        setShowConfirmModal(false);
+        setPendingAction(null);
+        setPendingValue(null);
+    }, []);
 
     const currentTurn = game.turn() === 'w' ? 'white' : 'black';
 
@@ -234,7 +303,7 @@ export default function App() {
 
                     {/* Difficulty */}
                     <div className="sidebar-section">
-                        <div className="sidebar-section-title">⚡ Cấp Độ Bot</div>
+                        <div className="sidebar-section-title"><FaBolt /> Cấp Độ Bot</div>
                         <div className="difficulty-grid">
                             {DIFFICULTIES.map( d => (
                                 <button
@@ -255,41 +324,41 @@ export default function App() {
 
                     {/* Color */}
                     <div className="sidebar-section">
-                        <div className="sidebar-section-title">🎨 Màu Quân</div>
+                        <div className="sidebar-section-title"><FaPalette /> Màu Quân</div>
                         <div className="color-picker">
                             <button
                                 className={`color-opt ${ playerColor === 'white' ? 'selected' : '' }`}
                                 onClick={() => { handleSetPlayerColor( 'white' ); }}
                             >
-                                ♔ Trắng
+                                <FaChessKing /> Trắng
                             </button>
                             <button
                                 className={`color-opt ${ playerColor === 'black' ? 'selected' : '' }`}
                                 onClick={() => { handleSetPlayerColor( 'black' ); }}
                             >
-                                ♚ Đen
+                                <FaChessQueen /> Đen
                             </button>
                         </div>
                     </div>
 
                     {/* Stats */}
                     <div className="sidebar-section">
-                        <div className="sidebar-section-title">📊 Kết Quả</div>
+                        <div className="sidebar-section-title"><FaChartBar /> Kết Quả</div>
                         <div className="stats-grid">
                             <div className="stat-item">
-                                <div className="stat-label">Thắng</div>
+                                <div className="stat-label"><FaTrophy /> Thắng</div>
                                 <div className="stat-value green">{wins}</div>
                             </div>
                             <div className="stat-item">
-                                <div className="stat-label">Thua</div>
+                                <div className="stat-label"><FaSkull /> Thua</div>
                                 <div className="stat-value red">{losses}</div>
                             </div>
                             <div className="stat-item">
-                                <div className="stat-label">Hòa</div>
+                                <div className="stat-label"><FaHandshake /> Hòa</div>
                                 <div className="stat-value yellow">{draws}</div>
                             </div>
                             <div className="stat-item">
-                                <div className="stat-label">Tổng</div>
+                                <div className="stat-label"><FaChess /> Tổng</div>
                                 <div className="stat-value">{wins + losses + draws}</div>
                             </div>
                         </div>
@@ -297,7 +366,7 @@ export default function App() {
 
                     {lastStats && (
                         <div className="sidebar-section card-yellow">
-                            <div className="sidebar-section-title">🤖 Thống Kê Bot</div>
+                            <div className="sidebar-section-title"><FaRobot /> Thống Kê Bot</div>
                             <div className="last-stats-content">
                                 <div className="stat-row">
                                     <span>Engine:</span>
@@ -366,16 +435,16 @@ export default function App() {
                     {/* Action buttons */}
                     <div className="action-buttons">
                         <button className="btn btn-yellow" onClick={newGame}>
-                            🔄 Ván Mới
+                            <FaRedo /> Ván Mới
                         </button>
                         <button className="btn btn-white" onClick={undo} disabled={!canUndo}>
-                            ↩️ Hoàn Tác
+                            <FaUndo /> Hoàn Tác
                         </button>
                     </div>
                     
                     {/* Move history */}
                     <div className="sidebar-section move-history-section">
-                        <div className="sidebar-section-title">📝 Lịch Sử Nước Đi</div>
+                        <div className="sidebar-section-title"><FaHistory /> Lịch Sử Nước Đi</div>
                         <div className="move-history-scroll">
                             {moveHistory.length === 0 ? (
                                 <div className="move-history-empty">
@@ -427,6 +496,14 @@ export default function App() {
                 wins={wins}
                 losses={losses}
                 draws={draws}
+            />
+
+            <ConfirmationModal
+                show={showConfirmModal}
+                onConfirm={handleConfirm}
+                onCancel={handleCancel}
+                title={pendingAction === 'difficulty' ? 'Đổi Cấp Độ Bot?' : 'Đổi Màu Quân?'}
+                message={`Thay đổi ${pendingAction === 'difficulty' ? 'cấp độ bot' : 'màu quân'} sẽ reset bàn cờ và bắt đầu ván mới. Bạn có chắc chắn muốn tiếp tục?`}
             />
 
             <ToastContainer toasts={toasts} />
