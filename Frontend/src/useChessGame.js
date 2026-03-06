@@ -93,6 +93,21 @@ export default function useChessGame({ onToast }) {
   }, [onToast]);
 
   /* ──────────────────────────────────────────
+     Handle time loss
+  ────────────────────────────────────────── */
+  const handleTimeLoss = useCallback((who) => {
+    if (gameResultRef.current) return; // Already game over
+    
+    if (who === 'player') {
+      setGameResult('loss');
+      setLosses(l => l + 1);
+    } else {
+      setGameResult('win');
+      setWins(w => w + 1);
+    }
+  }, []);
+
+  /* ──────────────────────────────────────────
      Apply move → cập nhật toàn bộ state
   ────────────────────────────────────────── */
   const applyMove = useCallback((updatedGame, san, side, botMoveStr, stats) => {
@@ -369,6 +384,7 @@ export default function useChessGame({ onToast }) {
     newGame,
     undo,
     canUndo: !botLockRef.current && game.history().length >= 2,
+    handleTimeLoss,
     // Game state
     game,
     gameResult,

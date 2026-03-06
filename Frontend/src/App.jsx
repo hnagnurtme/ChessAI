@@ -143,7 +143,7 @@ function ConfirmationModal({ show, onConfirm, onCancel, title, message }) {
 }
 
 /* ── Chess Timer Display ── */
-function ChessTimer({ playerColor, currentTurn, thinking }) {
+function ChessTimer({ playerColor, currentTurn, thinking, onTimeOut }) {
     const [playerTime, setPlayerTime] = useState(600); // 10 minutes
     const [botTime, setBotTime] = useState(600);
     
@@ -151,15 +151,29 @@ function ChessTimer({ playerColor, currentTurn, thinking }) {
         if (thinking) return;
         
         const interval = setInterval(() => {
-            if (currentTurn === playerColor && playerTime > 0) {
-                setPlayerTime(t => Math.max(0, t - 1));
-            } else if (currentTurn !== playerColor && botTime > 0) {
-                setBotTime(t => Math.max(0, t - 1));
+            if (currentTurn === playerColor) {
+                setPlayerTime(t => {
+                    const newTime = Math.max(0, t - 1);
+                    if (newTime === 0 && t > 0) {
+                        // Player hết giờ
+                        onTimeOut('player');
+                    }
+                    return newTime;
+                });
+            } else if (currentTurn !== playerColor) {
+                setBotTime(t => {
+                    const newTime = Math.max(0, t - 1);
+                    if (newTime === 0 && t > 0) {
+                        // Bot hết giờ
+                        onTimeOut('bot');
+                    }
+                    return newTime;
+                });
             }
         }, 1000);
         
         return () => clearInterval(interval);
-    }, [currentTurn, thinking, playerColor, playerTime, botTime]);
+    }, [currentTurn, thinking, playerColor, onTimeOut]);
 
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
@@ -221,7 +235,21 @@ export default function App() {
         canUndo,
         gameResult,
         game,
+        handleTimeLoss,
     } = chess;
+
+    // Handle time out
+    const handleTimeOut = useCallback((who) => {
+        if (gameResult) return; // Already game over
+        
+        if (who === 'player') {
+            handleTimeLoss('player');
+            addToast('⏰ Hết giờ! Bạn thua!', 'error');
+        } else {
+            handleTimeLoss('bot');
+            addToast('⏰ Bot hết giờ! Bạn thắng!', 'success');
+        }
+    }, [gameResult, handleTimeLoss, addToast]);
 
     // Wrap newGame to trigger timer reset
     const newGame = useCallback(() => {
@@ -430,6 +458,7 @@ export default function App() {
                         playerColor={playerColor}
                         currentTurn={currentTurn}
                         thinking={thinking}
+                        onTimeOut={handleTimeOut}
                     />
 
                     {/* Action buttons */}
