@@ -148,8 +148,6 @@ function ChessTimer({ playerColor, currentTurn, thinking, onTimeOut }) {
     const [botTime, setBotTime] = useState(600);
     
     useEffect(() => {
-        if (thinking) return;
-        
         const interval = setInterval(() => {
             if (currentTurn === playerColor) {
                 setPlayerTime(t => {
@@ -173,7 +171,7 @@ function ChessTimer({ playerColor, currentTurn, thinking, onTimeOut }) {
         }, 1000);
         
         return () => clearInterval(interval);
-    }, [currentTurn, thinking, playerColor, onTimeOut]);
+    }, [currentTurn, playerColor, onTimeOut]);
 
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
